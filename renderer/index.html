@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Quote</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --pink-bg: #fce8ed;
+      --pink-card: #fad5de;
+      --pink-accent: #f4b8c8;
+      --pink-border: #f0a0b8;
+      --pink-text: #c0385a;
+      --pink-text-light: #d4587a;
+      --pink-muted: #e08090;
+    }
+
+    html, body { width: 360px; height: 220px; overflow: hidden; background: transparent; }
+
+    body { font-family: "Nunito", sans-serif; -webkit-font-smoothing: antialiased; cursor: default; user-select: none; }
+
+    .widget {
+      width: 360px; height: 220px;
+      background: var(--pink-bg);
+      border-radius: 18px;
+      padding: 16px 18px 14px;
+      display: flex; flex-direction: column;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(192,56,90,0.15), 0 1px 4px rgba(192,56,90,0.1), inset 0 1px 0 rgba(255,255,255,0.6);
+      border: 1px solid var(--pink-border);
+      overflow: hidden;
+    }
+
+    .widget::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 10% 0%, rgba(255,255,255,0.5) 0%, transparent 60%),
+                  radial-gradient(ellipse at 90% 100%, rgba(240,160,184,0.2) 0%, transparent 50%);
+      border-radius: 18px; pointer-events: none;
+    }
+
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; -webkit-app-region: drag; flex-shrink: 0;
+    }
+
+    .header-title { display: flex; align-items: center; gap: 6px; }
+    .header-emoji { font-size: 14px; }
+    .header-label {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--pink-text);
+    }
+
+    .close-btn {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--pink-card); border: 1.5px solid var(--pink-border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; -webkit-app-region: no-drag;
+      transition: background 0.15s, transform 0.1s; flex-shrink: 0;
+    }
+    .close-btn:hover { background: var(--pink-accent); transform: scale(1.1); }
+    .close-btn svg { width: 8px; height: 8px; stroke: var(--pink-text); stroke-width: 2.5; }
+
+    .quote-card {
+      flex: 1; background: var(--pink-card); border-radius: 12px;
+      padding: 14px 16px; display: flex; flex-direction: column; justify-content: center;
+      border-left: 3.5px solid var(--pink-text-light);
+      position: relative; overflow: hidden; transition: opacity 0.4s ease;
+    }
+
+    .quote-card::before {
+      content: "\201C";
+      position: absolute; top: -8px; left: 12px;
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 60px; color: var(--pink-accent); line-height: 1; pointer-events: none;
+    }
+
+    .quote-text {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 16px; font-style: italic; font-weight: 600;
+      color: var(--pink-text); line-height: 1.6;
+      padding-left: 4px; padding-top: 4px; position: relative; z-index: 1;
+    }
+
+    .fade-out { opacity: 0; }
+
+    @keyframes shimmer { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
+    .loading .quote-text { animation: shimmer 1.2s ease infinite; }
+  </style>
+</head>
+<body>
+  <div class="widget">
+    <div class="header">
+      <div class="header-title">
+        <span class="header-emoji">&#x1F9D8;&#x200D;&#x2640;&#xFE0F;</span>
+        <span class="header-label">Quote of the Day</span>
+      </div>
+      <button class="close-btn" id="closeBtn" title="Hide widget">
+        <svg viewBox="0 0 10 10" fill="none">
+          <line x1="1" y1="1" x2="9" y2="9"/>
+          <line x1="9" y1="1" x2="1" y2="9"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="quote-card loading" id="quoteCard">
+      <p class="quote-text" id="quoteText">Loading today's quote…</p>
+    </div>
+  </div>
+
+  <script>
+    var card     = document.getElementById("quoteCard");
+    var textEl   = document.getElementById("quoteText");
+    var closeBtn = document.getElementById("closeBtn");
+
+    function apply(quote) {
+      textEl.textContent = quote.text;
+      card.classList.remove("loading");
+    }
+
+    function setQuote(quote, animate) {
+      if (animate) {
+        card.classList.add("fade-out");
+        setTimeout(function() {
+          apply(quote);
+          card.classList.remove("fade-out");
+        }, 350);
+      } else {
+        apply(quote);
+      }
+    }
+
+    window.quoteAPI.getQuote().then(function(q) { setQuote(q); });
+    window.quoteAPI.onQuoteUpdate(function(q) { setQuote(q, true); });
+    closeBtn.addEventListener("click", function() { window.quoteAPI.closeWidget(); });
+  </script>
+</body>
+</html>
